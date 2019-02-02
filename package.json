@@ -1,0 +1,47 @@
+{
+  "name": "task-queue",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "npx rm -rf dist",
+    "build": "npm run clean && npm run build:ts",
+    "build:ts": "npx tsc --build --pretty",
+    "test": "npx mocha -r ts-node/register test/**.spec.ts",
+    "lint": "npm run lint:ts",
+    "lint:ts": "npx tslint -p ./tsconfig.json -t codeFrame"
+  },
+  "author": {
+    "name": "Shaw Che",
+    "email": "shawche@outlook.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "types": "dist/type/*.d.ts",
+  "files": [
+    "dist",
+    "index.js"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn lint && yarn build && yarn test"
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.21",
+    "@types/sinon": "^7.0.5",
+    "chai": "^4.2.0",
+    "husky": "^1.3.1",
+    "mocha": "^5.2.0",
+    "sinon": "^7.2.3",
+    "ts-node": "^8.0.2",
+    "tslint": "^5.12.1",
+    "tslint-config-airbnb": "^5.11.1",
+    "typescript": "^3.2.4"
+  }
+}
