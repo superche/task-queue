@@ -4,6 +4,20 @@
 
 [![building](https://travis-ci.com/superche/task-queue.svg?branch=master)](https://travis-ci.com/superche/task-queue)
 
+## Install
+
+NPM
+
+```sh
+npm install --save p-task-queue
+```
+
+Yarn
+
+```sh
+yarn add p-task-queue
+```
+
 ## Usage
 
 `demo/basic.js`
