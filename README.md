@@ -2,7 +2,7 @@
 
 > Another FIFO task queue
 
-[![building](https://travis-ci.com/superche/task-queue.svg?branch=master)](https://travis-ci.com/superche/task-queue)
+[![building](https://travis-ci.com/superche/task-queue.svg?branch=master)](https://travis-ci.com/superche/task-queue) [![codecov](https://codecov.io/gh/superche/task-queue/branch/master/graph/badge.svg)](https://codecov.io/gh/superche/task-queue)
 
 ## Install
 
