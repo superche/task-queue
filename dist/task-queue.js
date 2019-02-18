@@ -12,22 +12,27 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var task_entry_1 = require("./task-entry");
+var task_scheduler_1 = require("./task-scheduler");
 var TaskQueue = /** @class */ (function () {
     function TaskQueue(options) {
         this.queue = [];
         var defaultOptions = {
+            autoRun: true,
             logger: console,
         };
         this.options = __assign({}, defaultOptions, options);
+        this.scheduler = new task_scheduler_1.TaskScheduler(this);
     }
     TaskQueue.prototype.push = function (task, options) {
         var taskEntry = this.buildTaskEntry(task, options);
         this.queue.push(taskEntry);
+        this.scheduler.check();
         return taskEntry;
     };
     TaskQueue.prototype.cutIn = function (position, task, options) {
         var taskEntry = this.buildTaskEntry(task, options);
         this.queue.splice(position, 0, taskEntry);
+        this.scheduler.check();
         return taskEntry;
     };
     TaskQueue.prototype.asap = function (task, options) {
@@ -35,7 +40,7 @@ var TaskQueue = /** @class */ (function () {
     };
     TaskQueue.prototype.run = function () {
         var _this = this;
-        return new Promise(function (resolve) {
+        this.entireQueuePromise = new Promise(function (resolve) {
             var callNext = (function _callNext() {
                 var currentTask = this.next();
                 if (currentTask === null) {
@@ -48,7 +53,29 @@ var TaskQueue = /** @class */ (function () {
             }).bind(_this);
             callNext();
         });
+        return this.entireQueuePromise;
     };
+    Object.defineProperty(TaskQueue.prototype, "whenComplete", {
+        get: function () {
+            return this.entireQueuePromise || Promise.resolve();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TaskQueue.prototype, "size", {
+        get: function () {
+            return this.queue.length;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(TaskQueue.prototype, "isRunnable", {
+        get: function () {
+            return this.queue.length > 0 && !this.currentTask;
+        },
+        enumerable: true,
+        configurable: true
+    });
     TaskQueue.prototype.next = function () {
         var _this = this;
         if (!this.queue.length) {

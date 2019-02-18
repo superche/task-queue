@@ -11,7 +11,6 @@ describe('TaskQueue', () => {
     const queue = new TaskQueue();
     const task = sinon.spy();
     const taskEntry = queue.push(task);
-    queue.run();
     await taskEntry;
     console.log('...');
     assert(task.called);
@@ -24,7 +23,6 @@ describe('TaskQueue', () => {
       args: [1, 2, 3],
     };
     const taskEntry = queue.push(task, options);
-    queue.run();
     await taskEntry;
     console.log('...');
     assert(task.called);
@@ -35,7 +33,6 @@ describe('TaskQueue', () => {
     const queue = new TaskQueue();
     const task = sinon.fake();
     const taskEntry = queue.push(task);
-    queue.run();
     await taskEntry;
     console.log('...');
     assert(task.called);
@@ -52,7 +49,7 @@ describe('TaskQueue', () => {
       const task: () => any = factory(token);
       queue.push(task);
     }
-    await queue.run();
+    await queue.whenComplete;
     console.log('...');
     console.log(logger.buffer);
     expect(logger.buffer).to.have.ordered.members([0, 1, 2, 3, 4]);
@@ -73,9 +70,21 @@ describe('TaskQueue', () => {
       }
     }
 
-    await queue.run();
+    await queue.whenComplete;
     console.log('...');
     console.log(logger.buffer);
-    expect(logger.buffer).to.have.ordered.members([3, 1, 0, 2, 4]);
+    expect(logger.buffer).to.have.ordered.members([0, 3, 1, 2, 4]);
+  });
+
+  it('should not auto run with options.autoRun = false', async () => {
+    const queue = new TaskQueue({ autoRun: false });
+    const task = sinon.spy();
+    const taskEntry = queue.push(task);
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(queue.size).equals(1);
+    await queue.run();
+    console.log('...');
+    assert(task.called);
   });
 });
