@@ -21,13 +21,17 @@ var TaskQueue = /** @class */ (function () {
         this.options = __assign({}, defaultOptions, options);
     }
     TaskQueue.prototype.push = function (task, options) {
-        var defaultTaskOptions = {
-            args: [],
-            callback: task,
-        };
-        var taskEntry = new task_entry_1.TaskEntry(__assign({}, defaultTaskOptions, options));
+        var taskEntry = this.buildTaskEntry(task, options);
         this.queue.push(taskEntry);
         return taskEntry;
+    };
+    TaskQueue.prototype.cutIn = function (position, task, options) {
+        var taskEntry = this.buildTaskEntry(task, options);
+        this.queue.splice(position, 0, taskEntry);
+        return taskEntry;
+    };
+    TaskQueue.prototype.asap = function (task, options) {
+        return this.cutIn(0, task, options);
     };
     TaskQueue.prototype.run = function () {
         var _this = this;
@@ -75,6 +79,13 @@ var TaskQueue = /** @class */ (function () {
             _this.currentTask = null;
         });
         return this.currentTask;
+    };
+    TaskQueue.prototype.buildTaskEntry = function (task, options) {
+        var defaultTaskOptions = {
+            args: [],
+            callback: task,
+        };
+        return new task_entry_1.TaskEntry(__assign({}, defaultTaskOptions, options));
     };
     return TaskQueue;
 }());

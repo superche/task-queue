@@ -1,7 +1,10 @@
+/* tslint:disable:no-console */
 import { assert, expect } from 'chai';
 import * as sinon from 'sinon';
 
 import { TaskQueue } from '../index';
+
+import { multiTaskHelper } from './utils/multiple-task-helper';
 
 describe('TaskQueue', () => {
   it('should execute a task', async () => {
@@ -40,26 +43,7 @@ describe('TaskQueue', () => {
   });
 
   it('should execute multiple tasks', async () => {
-    const logger = {
-      buffer: [],
-      log(value) {
-        logger.buffer.push(value);
-      },
-    };
-    function syncTaskFactory(token): () => any {
-      return function() {
-        return logger.log(token);
-      };
-    }
-    function asyncTaskFactory(token): () => any {
-      return function() {
-        return new Promise(resolve => {
-          setTimeout(() => resolve(token), 10);
-        }).then(t => {
-          logger.log(t);
-        });
-      };
-    }
+    const { asyncTaskFactory, logger, syncTaskFactory } = multiTaskHelper();
 
     const queue = new TaskQueue();
     const length = 5;
@@ -70,6 +54,28 @@ describe('TaskQueue', () => {
     }
     await queue.run();
     console.log('...');
+    console.log(logger.buffer);
     expect(logger.buffer).to.have.ordered.members([0, 1, 2, 3, 4]);
+  });
+
+  it('should execute tasks ASAP', async () => {
+    const { asyncTaskFactory, logger, syncTaskFactory } = multiTaskHelper();
+
+    const queue = new TaskQueue();
+    const length = 5;
+    for (let token = 0; token < length; token++) {
+      const factory = token % 3 === 0 ? syncTaskFactory : asyncTaskFactory;
+      const task: () => any = factory(token);
+      if (token % 2 === 0) {
+        queue.push(task);
+      } else {
+        queue.asap(task);
+      }
+    }
+
+    await queue.run();
+    console.log('...');
+    console.log(logger.buffer);
+    expect(logger.buffer).to.have.ordered.members([3, 1, 0, 2, 4]);
   });
 });

@@ -6,6 +6,9 @@ export declare class TaskQueue {
     private options;
     constructor(options?: any);
     push(task: () => any, options?: ITaskOptions): TaskEntry;
+    cutIn(position: number, task: () => any, options?: ITaskOptions): TaskEntry;
+    asap(task: () => any, options?: ITaskOptions): TaskEntry;
     run(): PromiseLike<any>;
     protected next(): TaskEntry;
+    private buildTaskEntry;
 }

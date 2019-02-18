@@ -20,17 +20,21 @@ export class TaskQueue {
   }
 
   public push(task: () => any, options?: ITaskOptions): TaskEntry {
-    const defaultTaskOptions: IInnerTaskOptions = {
-      args: [],
-      callback: task,
-    };
-    const taskEntry: TaskEntry = new TaskEntry({
-      ...defaultTaskOptions,
-      ...options,
-    });
+    const taskEntry: TaskEntry = this.buildTaskEntry(task, options);
     this.queue.push(taskEntry);
 
     return taskEntry;
+  }
+
+  public cutIn(position: number, task: () => any, options?: ITaskOptions) {
+    const taskEntry: TaskEntry = this.buildTaskEntry(task, options);
+    this.queue.splice(position, 0, taskEntry);
+
+    return taskEntry;
+  }
+
+  public asap(task: () => any, options?: ITaskOptions) {
+    return this.cutIn(0, task, options);
   }
 
   public run(): PromiseLike<any> {
@@ -75,5 +79,16 @@ export class TaskQueue {
       });
 
     return this.currentTask;
+  }
+
+  private buildTaskEntry(task: () => any, options?: ITaskOptions): TaskEntry {
+    const defaultTaskOptions: IInnerTaskOptions = {
+      args: [],
+      callback: task,
+    };
+    return new TaskEntry({
+      ...defaultTaskOptions,
+      ...options,
+    });
   }
 }
