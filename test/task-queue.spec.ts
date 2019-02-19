@@ -87,4 +87,22 @@ describe('TaskQueue', () => {
     console.log('...');
     assert(task.called);
   });
+
+  it('should pause and resume', async () => {
+    const queue = new TaskQueue();
+
+    const task1 = sinon.spy();
+    const taskEntry1 = queue.push(task1);
+    await taskEntry1;
+    queue.pause();
+    assert(task1.called);
+
+    const task2 = sinon.spy();
+    const taskEntry2 = queue.push(task2);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert(!task2.called);
+    queue.resume();
+    await taskEntry2;
+    assert(task2.called);
+  });
 });

@@ -10,3 +10,8 @@ export interface ITaskOptions {
 export interface IInnerTaskOptions extends ITaskOptions {
     callback: () => any;
 }
+export declare enum QueueStatus {
+    RUNNING = 0,
+    PAUSED = 1,
+    DONE = 2
+}

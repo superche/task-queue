@@ -5,15 +5,15 @@ export declare class TaskQueue {
     options: any;
     private queue;
     private scheduler;
-    private entireQueuePromise;
     constructor(options?: any);
     push(task: () => any, options?: ITaskOptions): TaskEntry;
     cutIn(position: number, task: () => any, options?: ITaskOptions): TaskEntry;
     asap(task: () => any, options?: ITaskOptions): TaskEntry;
     run(): PromiseLike<any>;
-    readonly whenComplete: PromiseLike<any>;
+    pause(): void;
+    resume(): void;
+    readonly whenComplete: TaskEntry;
     readonly size: number;
-    readonly isRunnable: boolean;
     protected next(): TaskEntry;
     private buildTaskEntry;
 }

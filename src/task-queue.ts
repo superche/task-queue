@@ -10,7 +10,6 @@ export class TaskQueue {
   public options: any; // TODO: define TaskQueue options
   private queue: TaskEntry[] = [];
   private scheduler: TaskScheduler;
-  private entireQueuePromise: PromiseLike<any>;
 
   constructor(options?) {
     const defaultOptions = {
@@ -27,7 +26,9 @@ export class TaskQueue {
   public push(task: () => any, options?: ITaskOptions): TaskEntry {
     const taskEntry: TaskEntry = this.buildTaskEntry(task, options);
     this.queue.push(taskEntry);
-    this.scheduler.check();
+    if (this.options.autoRun) {
+      this.scheduler.tryToRun();
+    }
 
     return taskEntry;
   }
@@ -35,7 +36,9 @@ export class TaskQueue {
   public cutIn(position: number, task: () => any, options?: ITaskOptions) {
     const taskEntry: TaskEntry = this.buildTaskEntry(task, options);
     this.queue.splice(position, 0, taskEntry);
-    this.scheduler.check();
+    if (this.options.autoRun) {
+      this.scheduler.tryToRun();
+    }
 
     return taskEntry;
   }
@@ -45,35 +48,25 @@ export class TaskQueue {
   }
 
   public run(): PromiseLike<any> {
-    this.entireQueuePromise = new Promise((resolve) => {
-      const callNext = (function _callNext() {
-        const currentTask = this.next();
-        if (currentTask === null) {
-          resolve();
-          return;
-        }
+    this.scheduler.start();
 
-        currentTask
-          .catch(() => []) // ignore error
-          .then(callNext); // recursively call next
-      }).bind(this);
+    return this.scheduler.whenComplete;
+  }
 
-      callNext();
-    });
+  public pause() {
+    this.scheduler.pause();
+  }
 
-    return this.entireQueuePromise;
+  public resume() {
+    this.scheduler.resume();
   }
 
   public get whenComplete() {
-    return this.entireQueuePromise || Promise.resolve();
+    return this.scheduler.whenComplete;
   }
 
   public get size() {
     return this.queue.length;
-  }
-
-  public get isRunnable() {
-    return this.queue.length > 0 && !this.currentTask;
   }
 
   protected next(): TaskEntry {
